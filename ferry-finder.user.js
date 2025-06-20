@@ -103,6 +103,39 @@
         }
     }
 
+    function playVictorySound() {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const notes = [
+                { f: 523.25, t: 0.0 },   // C5
+                { f: 659.25, t: 0.3 },   // E5
+                { f: 783.99, t: 0.6 },   // G5
+                { f: 1046.5, t: 1.0 },   // C6
+                { f: 783.99, t: 1.5 },   // G5
+                { f: 659.25, t: 2.0 },   // E5
+                { f: 1046.5, t: 2.5 },   // C6
+                { f: 880.00, t: 3.0 },   // A5
+                { f: 1174.7, t: 3.5 },   // D6
+                { f: 1567.98, t: 4.0 },  // G6
+            ];
+            const g = ctx.createGain();
+            g.connect(ctx.destination);
+            g.gain.value = 0.18;
+            notes.forEach((note, i) => {
+                const o = ctx.createOscillator();
+                o.type = 'triangle';
+                o.frequency.value = note.f;
+                o.connect(g);
+                o.start(ctx.currentTime + note.t);
+                o.stop(ctx.currentTime + note.t + 0.35);
+                o.onended = () => o.disconnect();
+            });
+            setTimeout(() => { g.gain.value = 0; ctx.close(); }, 5000);
+        } catch (e) {
+            console.log('[FerryFisher] Victory sound failed:', e);
+        }
+    }
+
     function tryClick() {
         const departures = getDepartureTimes();
         console.log('[FerryFisher] looking for availabilies on departures:', departures);
@@ -127,7 +160,7 @@
                 if (valiBtn) {
                     valiBtn.click();
                     setStatus(`Button clicked for ${departure}!`);
-                    playNotificationSound();
+                    playVictorySound();
                     stopAuto();
                     return true;
                 }
