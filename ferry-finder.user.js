@@ -22,16 +22,52 @@
     panel.style.padding = '12px';
     panel.style.zIndex = 99999;
     panel.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+
+    // --- Collapse/Expand State ---
+    function getCollapsed() {
+        return localStorage.getItem('ff-collapsed') === 'true';
+    }
+    function setCollapsed(val) {
+        localStorage.setItem('ff-collapsed', val ? 'true' : 'false');
+    }
+
+    // --- Panel HTML ---
     panel.innerHTML = `
-        <b>Ferry Fisher</b><br>
-        Refresh rate (sec): <input type="number" id="ff-interval" value="5" min="1" style="width:40px;"> <br>
-        Departure times (one per line):<br>
-        <textarea id="ff-departure" rows="10" style="width:80px;resize:vertical;">22:50\n22:15\n21:40\n21:05\n20:30\n19:55\n19:20\n18:45\n18:10\n17:35\n17:00\n16:25\n15:50\n15:15\n14:40\n14:05\n13:30\n12:55\n12:00\n11:25\n10:50\n10:15\n09:40</textarea><br>
-        <button id="ff-start" style="background:#28a745;color:#fff;border:none;padding:4px 12px;margin-right:4px;border-radius:3px;cursor:pointer;">Start</button>
-        <button id="ff-stop" style="background:#dc3545;color:#fff;border:none;padding:4px 12px;border-radius:3px;cursor:pointer;">Stop</button>
-        <div id="ff-status" style="margin-top:6px;color:#333;font-size:12px;"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <b>Ferry Fisher</b>
+          <button id="ff-collapse" title="Collapse/Expand" style="margin-left:8px;font-size:14px;padding:0 6px;line-height:1.2;cursor:pointer;background:#eee;border:1px solid #bbb;border-radius:3px;">&#x25B2;</button>
+        </div>
+        <div id="ff-inputs">
+          Refresh rate (sec): <input type="number" id="ff-interval" value="5" min="1" style="width:40px;"> <br>
+          Departure times (one per line):<br>
+          <textarea id="ff-departure" rows="10" style="width:80px;resize:vertical;">22:50\n22:15\n21:40\n21:05\n20:30\n19:55\n19:20\n18:45\n18:10\n17:35\n17:00\n16:25\n15:50\n15:15\n14:40\n14:05\n13:30\n12:55\n12:00\n11:25\n10:50\n10:15\n09:40</textarea><br>
+          <button id="ff-start" style="background:#28a745;color:#fff;border:none;padding:4px 12px;margin-right:4px;border-radius:3px;cursor:pointer;">Start</button>
+          <button id="ff-stop" style="background:#dc3545;color:#fff;border:none;padding:4px 12px;border-radius:3px;cursor:pointer;">Stop</button>
+          <div id="ff-status" style="margin-top:6px;color:#333;font-size:12px;"></div>
+        </div>
     `;
     document.body.appendChild(panel);
+
+    // --- Collapse/Expand Logic ---
+    const collapseBtn = panel.querySelector('#ff-collapse');
+    const inputsDiv = panel.querySelector('#ff-inputs');
+    function updateCollapseUI() {
+        const collapsed = getCollapsed();
+        if (collapsed) {
+            inputsDiv.style.display = 'none';
+            collapseBtn.innerHTML = '&#x25BC;'; // Down arrow
+            collapseBtn.title = 'Expand';
+        } else {
+            inputsDiv.style.display = '';
+            collapseBtn.innerHTML = '&#x25B2;'; // Up arrow
+            collapseBtn.title = 'Collapse';
+        }
+    }
+    collapseBtn.onclick = function() {
+        setCollapsed(!getCollapsed());
+        updateCollapseUI();
+    };
+    updateCollapseUI();
 
     let timeoutId = null;
     let running = false;
